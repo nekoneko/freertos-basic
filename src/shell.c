@@ -161,29 +161,24 @@ void help_command(int n,char *argv[]){
 }
 
 void test_command(int n, char *argv[]) {
-    int handle;
-    int error;
 
     fio_printf(1, "\r\n");
-    
-    handle = host_action(SYS_SYSTEM, "mkdir -p output");
-    handle = host_action(SYS_SYSTEM, "touch output/syslog");
+	int i, a, b;
+	a = 0;
+	b = 1;
+    fio_printf(1, "Fibonacci : A0 = 0\r\n");
+    fio_printf(1, "Fibonacci : A1 = 1\r\n");
 
-    handle = host_action(SYS_OPEN, "output/syslog", 8);
-    if(handle == -1) {
-        fio_printf(1, "Open file error!\n\r");
-        return;
-    }
+	for(i = 2;i < 47;i++) {
+		a+=b;
 
-    char *buffer = "Test host_write function which can write data to output/syslog\n";
-    error = host_action(SYS_WRITE, handle, (void *)buffer, strlen(buffer));
-    if(error != 0) {
-        fio_printf(1, "Write file error! Remain %d bytes didn't write in the file.\n\r", error);
-        host_action(SYS_CLOSE, handle);
-        return;
-    }
+		a^=b;
+		b^=a;
+		a^=b;
 
-    host_action(SYS_CLOSE, handle);
+    	fio_printf(1, "Fibonacci : A%d = %d\r\n", i, b);
+	}
+	return;
 }
 
 void _command(int n, char *argv[]){
