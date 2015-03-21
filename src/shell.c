@@ -9,6 +9,9 @@
 #include "task.h"
 #include "host.h"
 
+#include <math.h> 	//sqrt(double)
+#include <stdio.h> 	//sscanf(...)
+
 typedef struct {
 	const char *name;
 	cmdfunc *fptr;
@@ -23,8 +26,20 @@ void host_command(int, char **);
 void help_command(int, char **);
 void host_command(int, char **);
 void mmtest_command(int, char **);
+
 void test_command(int, char **);
+	void nfib_command(int, char **);
+	void ffib_command(int, char **);
+		unsigned int ffib(unsigned int);
+		unsigned int clz_c(unsigned int);
+
+	void prime_command(int, char **);
+		int prime(int);
+		unsigned int atoi(const char *);
+
 void _command(int, char **);
+
+cmdfunc *do_test_command(const char *);
 
 #define MKCL(n, d) {.name=#n, .fptr=n ## _command, .desc=d}
 
@@ -38,6 +53,12 @@ cmdlist cl[]={
 	MKCL(help, "help"),
 	MKCL(test, "test new function"),
 	MKCL(, ""),
+};
+
+cmdlist tl[]={
+	MKCL(nfib, "show fibonacci by normal way"),
+	MKCL(ffib, "show fibonacci by fast way"),
+	MKCL(prime, "show prime"),
 };
 
 int parse_command(char *str, char *argv[]){
@@ -162,12 +183,35 @@ void help_command(int n,char *argv[]){
 
 void test_command(int n, char *argv[]) {
 
-    fio_printf(1, "\r\n");
+	if (n>1) {
+		cmdfunc *fptr= do_test_command(argv[1]);
+		if(fptr!=NULL)
+			fptr(n, argv);
+		else
+			fio_printf(2, " \"%s\" not found for \"test\"", argv[1]);
+	}
+	else {
+        fio_printf(2, "Usage: test 'command'\r\n");
+	}
+}
+
+cmdfunc *do_test_command(const char *cmd) {
+
+	int i;
+
+	for(i=0; i<sizeof(tl)/sizeof(tl[0]); ++i){
+		if(strcmp(tl[i].name, cmd)==0)
+			return tl[i].fptr;
+	}
+	return NULL;
+}
+
+void nfib_command(int n, char *argv[]) {
 	int i, a, b;
 	a = 0;
 	b = 1;
-    fio_printf(1, "Fibonacci : A0 = 0\r\n");
-    fio_printf(1, "Fibonacci : A1 = 1\r\n");
+    fio_printf(1, "\r\nNormal Fibonacci : A0 = 0\r\n");
+    fio_printf(1, "Normal Fibonacci : A1 = 1\r\n");
 
 	for(i = 2;i < 47;i++) {
 		a+=b;
@@ -179,6 +223,111 @@ void test_command(int n, char *argv[]) {
     	fio_printf(1, "Fibonacci : A%d = %d\r\n", i, b);
 	}
 	return;
+}
+
+void ffib_command(int n, char *argv[]) {
+	
+	int i;
+
+	fio_printf(1, "\r\n");
+	
+	for(i=0;i<47;++i) 
+		fio_printf(1, "Fast Fibonacci : A%d = %d\r\n",
+					   	i, ffib(i));
+
+	return;
+}
+
+unsigned int ffib(unsigned int n) {
+
+	unsigned int a,b,t1,cmp_unit;
+
+	a=0;
+	b=1;
+	cmp_unit = 0x80000000>>clz_c(n);
+
+	for(;cmp_unit > 0;cmp_unit>>=1) {
+		t1=a*(2*b-a);
+		b=b*b+a*a;
+		a=t1;
+		if(n&cmp_unit) {
+			t1=a+b;
+			a=b;
+			b=t1;
+		}
+	}
+	return a;
+}
+
+/*
+ * Copyright (C) 2007 The Android Open Source Project
+ * Source Code From:
+ * http://www.netmite.com/android/mydroid/dalvik/vm/alloc/clz.c
+ */
+//it maybe be modified with inline assembly 'clz...'
+unsigned int clz_c(unsigned int x) {
+	//input variable type must be 'unsigned'
+	unsigned int e;
+	if(!x) return 32;
+	e = 31;
+	if(x&0xFFFF0000) {e-=16; x>>=16;}
+	if(x&0x0000FF00) {e-=8 ; x>>=8; }
+	if(x&0x000000F0) {e-=4 ; x>>=4; }
+	if(x&0x0000000C) {e-=2 ; x>>=2; }
+	if(x&0x00000002) {e-=1;}
+	return e;
+}
+
+void prime_command(int n, char *argv[]) {
+
+	unsigned int i,number;
+
+	fio_printf(2,"\r\n");
+
+	if(n==2) {
+		fio_printf(2,"Usage : test prime \'number\'\r\n");
+		return;
+	}
+
+	if(n>3) {
+		fio_printf(2,"too many argument, Usage : test prime \'number\'\r\n");
+		return;
+	}
+
+	number = atoi(argv[2]);
+
+	fio_printf(1,"prime below %d\r\n",number);
+
+	for(i=2;i<=number;++i) {
+		if(prime(i)) {
+			fio_printf(1,"%d\r\n",i);
+		}
+	}
+
+	return;
+}
+
+int prime(int n) {
+	unsigned int i;
+	for(i=2;i<n;++i) {
+		if(!(n%i)) return 0;
+	}
+	return 1;
+}
+
+
+/*
+ * Reference : https://gist.github.com/good5dog5/e97f2fe6d59149006a80#file-gistfile1-c
+ * */
+unsigned int atoi(const char *str) {
+	unsigned int result,c;
+	result = 0;
+	while(*str!=0) {
+		c = *str - '0';
+		result = result*10 + c;
+		++str;
+	}
+	return result;
 }
 
 void _command(int n, char *argv[]){
