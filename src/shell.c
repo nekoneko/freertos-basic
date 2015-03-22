@@ -244,33 +244,51 @@ void nfib_command(int n, char *argv[]) {
 
 void ffib_command(int n, char *argv[]) {
 	
-	int i;
+	int number;
 
 	fio_printf(1, "\r\n");
-	
-	for(i=0;i<47;++i)
-		fio_printf(1, "Fast Fibonacci : A%d = %d\r\n", i, ffib(i));
+
+	if(n==2) {
+		fio_printf(2, "Usage : test ffib \'number\'\r\n");
+		return;
+	}
+
+	if(n>3) {
+		fio_printf(2, "too many argument, Usage : test ffib \'number\'\r\n");
+		return;
+	}
+
+	number = atoi(argv[2]);
+
+	number = (number>46)?46:number;
+
+	ffib(number);
 
 	return;
 }
 
 unsigned int ffib(unsigned int n) {
 
-	unsigned int a,b,t1,cmp_unit;
+	unsigned int a,b,t1,cmp_unit,id;
 
 	a=0;
 	b=1;
+	id=0;
 	cmp_unit = 0x80000000>>clz_c(n);
 
 	for(;cmp_unit > 0;cmp_unit>>=1) {
 		t1=a*(2*b-a);
 		b=b*b+a*a;
 		a=t1;
+		id<<=1;
 		if(n&cmp_unit) {
 			t1=a+b;
 			a=b;
 			b=t1;
+			id+=1;
 		}
+
+		fio_printf(2,"Fast Fibonacc A%d = %d\r\n", id, a);
 	}
 	return a;
 }
