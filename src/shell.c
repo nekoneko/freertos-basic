@@ -37,6 +37,9 @@ void test_command(int, char **);
 		int prime(int);
 		unsigned int atoi(const char *);
 
+void new_command(int, char **);
+	void new_task(void *);
+
 void _command(int, char **);
 
 cmdfunc *do_test_command(const char *);
@@ -52,6 +55,7 @@ cmdlist cl[]={
 	MKCL(mmtest, "heap memory allocation test"),
 	MKCL(help, "help"),
 	MKCL(test, "test new function"),
+	MKCL(new, "new a task"),
 	MKCL(, ""),
 };
 
@@ -348,7 +352,6 @@ int prime(int n) {
 	return 1;
 }
 
-
 /*
  * Reference : https://gist.github.com/good5dog5/e97f2fe6d59149006a80#file-gistfile1-c
  * */
@@ -361,6 +364,27 @@ unsigned int atoi(const char *str) {
 		++str;
 	}
 	return result;
+}
+
+void new_command(int n, char *argv[]) {
+	signed portBASE_TYPE xReturn;
+
+	fio_printf(1,"\r\n");
+
+	xReturn=xTaskCreate(new_task, (signed portCHAR *) "TASK_1", 512 /* stack size */, NULL, tskIDLE_PRIORITY + 1, NULL);
+
+	if(xReturn==pdPASS)
+		fio_printf(1,"successfully create task \'%s\'\r\n","TASK_1");
+	else {
+		fio_printf(2,"fail to create new task \'%s\', error : %d\r\n","TASK_1", xReturn);
+	}
+	return;
+}
+
+void new_task(void *pvParameters) {
+	int i =0;
+	while(1) i+=1;
+	return;
 }
 
 void _command(int n, char *argv[]){
