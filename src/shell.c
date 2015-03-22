@@ -368,16 +368,18 @@ unsigned int atoi(const char *str) {
 
 void new_command(int n, char *argv[]) {
 	signed portBASE_TYPE xReturn;
-	unsigned int taskN,i;
+	unsigned int taskN,i,stdp;
 
 	fio_printf(1,"\r\n");
 	
+	stdp=256;
+
 	taskN=1;
 	if(n==2) taskN=atoi(argv[1]);
 
 	for(i=0;i<taskN;++i) {
 		xReturn=pdTRUE;
-		xReturn=xTaskCreate(new_task, (signed portCHAR *) "TASK_1", 512 /* stack size */, NULL, tskIDLE_PRIORITY + 1, NULL);
+		xReturn=xTaskCreate(new_task, (signed portCHAR *) "TASK_1", stdp /* stack size */, NULL, tskIDLE_PRIORITY + 1, NULL);
 
 		if(xReturn==pdPASS)
 			fio_printf(1,"successfully create task \'%s\'\r\n","TASK_1");
