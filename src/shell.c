@@ -207,20 +207,37 @@ cmdfunc *do_test_command(const char *cmd) {
 }
 
 void nfib_command(int n, char *argv[]) {
-	int i, a, b;
+	int i, a, b, number;
+
+	if(n>3) {
+		fio_printf(2,"\r\ntoo many argument, Usage: test nfib 'number'\r\n");
+		return;
+	}
+
+	//test nfib ==> as 'test nfib 10'
+	if(n==2) number = 10;
+
+	if(n==3) number = atoi(argv[2]);
+
+	if(number>46) number=46;
+
 	a = 0;
 	b = 1;
-    fio_printf(1, "\r\nNormal Fibonacci : A0 = 0\r\n");
-    fio_printf(1, "Normal Fibonacci : A1 = 1\r\n");
 
-	for(i = 2;i < 47;i++) {
+	fio_printf(1, "\r\nNormal Fibonacci : A0 = 0\r\n");
+	if(number<=0) 	return;
+
+	fio_printf(1, "Normal Fibonacci : A1 = 1\r\n");
+    if(number==1) 	return;
+
+	for(i = 2;i <= number;i++) {
 		a+=b;
 
 		a^=b;
 		b^=a;
 		a^=b;
 
-    	fio_printf(1, "Fibonacci : A%d = %d\r\n", i, b);
+    	fio_printf(1, "Normal Fibonacci : A%d = %d\r\n", i, b);
 	}
 	return;
 }
@@ -231,9 +248,8 @@ void ffib_command(int n, char *argv[]) {
 
 	fio_printf(1, "\r\n");
 	
-	for(i=0;i<47;++i) 
-		fio_printf(1, "Fast Fibonacci : A%d = %d\r\n",
-					   	i, ffib(i));
+	for(i=0;i<47;++i)
+		fio_printf(1, "Fast Fibonacci : A%d = %d\r\n", i, ffib(i));
 
 	return;
 }
@@ -261,7 +277,6 @@ unsigned int ffib(unsigned int n) {
 
 /*
  * Copyright (C) 2007 The Android Open Source Project
- * Source Code From:
  * http://www.netmite.com/android/mydroid/dalvik/vm/alloc/clz.c
  */
 //it maybe be modified with inline assembly 'clz...'
